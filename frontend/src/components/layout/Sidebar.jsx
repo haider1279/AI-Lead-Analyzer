@@ -5,7 +5,6 @@ import {
   KanbanSquare,
   Clock,
   CheckSquare,
-  BarChart3,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -33,7 +32,6 @@ export function Sidebar({ currentRoute, onNavigate, stats }) {
       badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
     },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },
     ...(isAdmin ? [{ id: 'users', label: 'Team & Roles', icon: ShieldCheck }] : []),
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

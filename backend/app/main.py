@@ -12,7 +12,6 @@ from .routes import (
     ai,
     proposals,
     dashboard,
-    reports,
     settings as settings_router,
 )
 
@@ -70,7 +69,6 @@ app.include_router(tasks.router)
 app.include_router(ai.router)
 app.include_router(proposals.router)
 app.include_router(dashboard.router)
-app.include_router(reports.router)
 app.include_router(settings_router.router)
 
 @app.get("/health", tags=["System"])

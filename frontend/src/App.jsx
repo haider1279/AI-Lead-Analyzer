@@ -14,7 +14,6 @@ import { LeadDetail } from './pages/LeadDetail';
 import { Pipeline } from './pages/Pipeline';
 import { FollowUps } from './pages/FollowUps';
 import { Tasks } from './pages/Tasks';
-import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { Users } from './pages/Users';
 import { api } from './services/api';
@@ -29,7 +28,6 @@ const ROUTE_TITLES = {
   pipeline: 'Sales Pipeline',
   'follow-ups': 'Follow-ups',
   tasks: 'Tasks',
-  reports: 'Reports & Analytics',
   users: 'Team Management',
   settings: 'Settings',
 };
@@ -163,10 +161,6 @@ function AppInner() {
 
         {route === 'tasks' && (
           <Tasks onSelectLead={selectLead} />
-        )}
-
-        {route === 'reports' && (
-          <Reports onNavigate={navigate} />
         )}
 
         {route === 'users' && (

@@ -279,12 +279,6 @@ export const api = {
     getStats: () => request('/dashboard/stats'),
   },
 
-  // ── Reports ──────────────────────────────────────────────────────────────
-
-  reports: {
-    get: (params = {}) => request(`/reports${buildQuery(params)}`),
-  },
-
   // ── Settings ─────────────────────────────────────────────────────────────
 
   settings: {
