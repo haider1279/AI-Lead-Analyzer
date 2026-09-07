@@ -336,7 +336,7 @@ class DatabaseRepository:
                     user_id = str(current_user.get("id"))
                     lead_assigned = str(lead.get("assigned_to") or "")
                     lead_creator = str(lead.get("created_by") or "")
-                    if lead_assigned != user_id and lead_creator != user_id:
+                    if (lead_creator or lead_assigned) and lead_assigned != user_id and lead_creator != user_id:
                         return None
                 
                 all_profiles = {p["id"]: p for p in await self.list_profiles()}
@@ -467,7 +467,10 @@ class DatabaseRepository:
                         except Exception:
                             pass
                 
-                return await self.get_lead(lead_id, current_user)
+                created = await self.get_lead(lead_id, current_user)
+                if not created:
+                    return _format_lead_out(record)
+                return created
             except Exception as e:
                 print(f"[DB] Error in create_lead: {e}")
                 raise e
@@ -651,7 +654,15 @@ class DatabaseRepository:
                         "new_status": new_status,
                         "changed_by": user_id,
                     }
-                    self.supabase.table("status_history").insert(history_entry).execute()
+                    try:
+                        self.supabase.table("status_history").insert(history_entry).execute()
+                    except Exception as sh_err:
+                        if "foreign key" in str(sh_err).lower() or "changed_by" in str(sh_err).lower():
+                            history_entry["changed_by"] = None
+                            try:
+                                self.supabase.table("status_history").insert(history_entry).execute()
+                            except Exception:
+                                pass
                     
                     activity_entry = {
                         "lead_id": lead_id,
@@ -662,7 +673,15 @@ class DatabaseRepository:
                         "outcome": updates.get("notes") or None,
                         "activity_date": now,
                     }
-                    self.supabase.table("activities").insert(activity_entry).execute()
+                    try:
+                        self.supabase.table("activities").insert(activity_entry).execute()
+                    except Exception as act_err:
+                        if "foreign key" in str(act_err).lower() or "user_id" in str(act_err).lower():
+                            activity_entry["user_id"] = None
+                            try:
+                                self.supabase.table("activities").insert(activity_entry).execute()
+                            except Exception:
+                                pass
                 
                 formatted_updates = {}
                 for k, v in updates.items():
@@ -801,7 +820,14 @@ class DatabaseRepository:
                     "activity_date": act_date,
                     "follow_up_date": f_date or None,
                 }
-                res = self.supabase.table("activities").insert(record).execute()
+                try:
+                    res = self.supabase.table("activities").insert(record).execute()
+                except Exception as ins_err:
+                    if "foreign key" in str(ins_err).lower() or "user_id" in str(ins_err).lower():
+                        record["user_id"] = None
+                        res = self.supabase.table("activities").insert(record).execute()
+                    else:
+                        raise ins_err
                 created = res.data[0]
                 
                 if f_date:
@@ -928,7 +954,23 @@ class DatabaseRepository:
                     "created_at": now,
                     "updated_at": now
                 }
-                res = self.supabase.table("tasks").insert(record).execute()
+                res = None
+                for _ in range(3):
+                    try:
+                        res = self.supabase.table("tasks").insert(record).execute()
+                        break
+                    except Exception as ins_err:
+                        err_lower = str(ins_err).lower()
+                        if "foreign key" in err_lower:
+                            if "assigned_to" in err_lower and record.get("assigned_to"):
+                                record["assigned_to"] = None
+                                continue
+                            if "created_by" in err_lower and record.get("created_by"):
+                                record["created_by"] = None
+                                continue
+                        raise ins_err
+                if not res or not res.data:
+                    raise RuntimeError("Failed to insert task.")
                 created = res.data[0]
                 
                 all_profiles = {p["id"]: p for p in await self.list_profiles()}

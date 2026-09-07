@@ -442,7 +442,7 @@ export function FindLeads({ onNavigate }) {
         </div>
       ) : leads.length === 0 ? (
         <EmptyState
-          icon={<Globe className="w-10 h-10 text-slate-600" />}
+          icon={Globe}
           title="No leads found"
           description="Import a dataset to discover and verify leads, or adjust your filters."
           action={

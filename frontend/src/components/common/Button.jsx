@@ -6,11 +6,13 @@ export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
+  isLoading = false,
   disabled = false,
   icon: Icon,
   className = '',
   ...props
 }) {
+  const isButtonLoading = loading || isLoading;
   const baseStyles =
     'inline-flex items-center justify-center transition-all select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none';
 
@@ -40,12 +42,14 @@ export function Button({
 
   return (
     <button
-      disabled={disabled || loading}
+      disabled={disabled || isButtonLoading}
       className={`${baseStyles} ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${className}`}
       {...props}
     >
-      {loading ? (
+      {isButtonLoading ? (
         <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+      ) : React.isValidElement(Icon) ? (
+        Icon
       ) : Icon ? (
         <Icon className="w-4 h-4 shrink-0" />
       ) : null}

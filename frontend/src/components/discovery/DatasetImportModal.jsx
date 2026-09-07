@@ -35,6 +35,17 @@ const TARGET_FIELDS = [
   { id: 'project_description', label: 'Description / Notes', required: false },
 ];
 
+function formatErrorMessage(err, fallback = 'Operation failed.') {
+  if (!err) return fallback;
+  if (typeof err === 'string') return err;
+  if (typeof err.message === 'string') return err.message;
+  if (typeof err.detail === 'string') return err.detail;
+  if (Array.isArray(err.detail)) {
+    return err.detail.map((d) => (typeof d === 'string' ? d : d?.msg || JSON.stringify(d))).join(', ');
+  }
+  return fallback;
+}
+
 export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1); // 1: Upload, 2: Mapping, 3: Executing, 4: Results
   const [file, setFile] = useState(null);
@@ -101,7 +112,7 @@ export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
       setSourceName(selectedFile.name.replace(/\.[^/.]+$/, ''));
       setStep(2);
     } catch (err) {
-      setError(err.message || 'Failed to read spreadsheet preview.');
+      setError(formatErrorMessage(err, 'Failed to read spreadsheet preview.'));
     } finally {
       setLoading(false);
     }
@@ -150,7 +161,7 @@ export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
         onSuccess(res);
       }
     } catch (err) {
-      setError(err.message || 'Import execution failed.');
+      setError(formatErrorMessage(err, 'Import execution failed.'));
       setStep(2);
     } finally {
       setLoading(false);
@@ -214,7 +225,7 @@ export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-xs text-rose-300 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-            <div className="flex-1">{error}</div>
+            <div className="flex-1">{typeof error === 'string' ? error : (error?.message || 'An error occurred during import.')}</div>
             <button onClick={() => setError(null)} className="text-rose-400 hover:text-white">
               <X className="w-3.5 h-3.5" />
             </button>
@@ -394,7 +405,7 @@ export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
               <Button variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleStartImport} isLoading={loading}>
+              <Button variant="primary" onClick={handleStartImport} loading={loading}>
                 Execute Import & 70% Gate Verification
               </Button>
             </div>
@@ -583,10 +594,10 @@ export function DatasetImportModal({ isOpen, onClose, onSuccess }) {
                           </span>
                         </div>
                         <ul className="space-y-0.5">
-                          {rd.reasons.slice(0, 5).map((reason, ri) => (
+                          {Array.isArray(rd.reasons) && rd.reasons.slice(0, 5).map((reason, ri) => (
                             <li key={ri} className="text-[10px] text-slate-400 flex items-start gap-1.5">
                               <span className="text-rose-500 mt-0.5 shrink-0">•</span>
-                              <span>{reason}</span>
+                              <span>{typeof reason === 'string' ? reason : (reason?.detail || reason?.msg || JSON.stringify(reason))}</span>
                             </li>
                           ))}
                         </ul>

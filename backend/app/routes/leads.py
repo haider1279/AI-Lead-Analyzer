@@ -94,6 +94,11 @@ async def preview_import(
     
     try:
         preview = LeadDatasetImporter.generate_preview(file_bytes, filename)
+        preview["filename"] = filename
+        preview["total_rows"] = preview.get("total_preview_rows", 0)
+        preview["columns"] = preview.get("detected_headers", [])
+        preview["suggested_mapping"] = preview.get("suggested_mappings", {})
+        preview["sample_rows"] = preview.get("preview_rows", [])
         return ImportPreviewResponse(**preview)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))

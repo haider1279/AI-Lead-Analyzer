@@ -161,7 +161,7 @@ class DuplicateMatch(BaseModel):
 
 
 class DuplicateCheckRequest(BaseModel):
-    company_name: str
+    company_name: Optional[str] = None
     email: Optional[str] = None
     exclude_id: Optional[str] = None
 
@@ -180,12 +180,19 @@ class ColumnPreview(BaseModel):
 
 
 class ImportPreviewResponse(BaseModel):
-    filename: str
-    total_rows: int
-    columns: List[str]
-    column_previews: List[ColumnPreview] = []
-    sample_rows: List[Dict[str, Any]] = []
-    suggested_mapping: Dict[str, str] = {}
+    # Discovery & Radar import preview fields (matching frontend DatasetImportModal)
+    total_preview_rows: Optional[int] = None
+    detected_headers: Optional[List[str]] = []
+    suggested_mappings: Optional[Dict[str, str]] = {}
+    preview_rows: Optional[List[Dict[str, Any]]] = []
+
+    # Backward-compatible fields
+    filename: Optional[str] = None
+    total_rows: Optional[int] = None
+    columns: Optional[List[str]] = []
+    column_previews: Optional[List[ColumnPreview]] = []
+    sample_rows: Optional[List[Dict[str, Any]]] = []
+    suggested_mapping: Optional[Dict[str, str]] = {}
 
 
 class RejectionDetail(BaseModel):

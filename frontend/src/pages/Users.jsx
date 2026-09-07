@@ -579,7 +579,7 @@ export function Users() {
         <div className="flex-1 min-w-0 space-y-4">
           {teams.length === 0 ? (
             <EmptyState
-              icon={<Users2 className="w-10 h-10 text-slate-600" />}
+              icon={Users2}
               title="No teams yet"
               description={
                 isAdmin

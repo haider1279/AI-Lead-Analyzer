@@ -44,11 +44,30 @@ async function request(path, options = {}) {
     } catch {
       errorPayload = { message: response.statusText };
     }
-    const message =
-      errorPayload?.detail ||
-      errorPayload?.message ||
-      errorPayload?.error ||
-      `Request failed with status ${response.status}`;
+    let message;
+    if (typeof errorPayload?.detail === 'string') {
+      message = errorPayload.detail;
+    } else if (Array.isArray(errorPayload?.detail)) {
+      message = errorPayload.detail
+        .map((d) => (typeof d === 'string' ? d : d?.msg || JSON.stringify(d)))
+        .join(', ');
+    } else if (typeof errorPayload?.message === 'string') {
+      message = errorPayload.message;
+    } else if (typeof errorPayload?.error === 'string') {
+      message = errorPayload.error;
+    } else if (errorPayload?.details && Array.isArray(errorPayload.details)) {
+      message = errorPayload.details
+        .map((d) => (typeof d === 'string' ? d : d?.msg || JSON.stringify(d)))
+        .join(', ');
+    } else if (errorPayload && typeof errorPayload === 'object') {
+      try {
+        message = JSON.stringify(errorPayload);
+      } catch {
+        message = `Request failed with status ${response.status}`;
+      }
+    } else {
+      message = `Request failed with status ${response.status}`;
+    }
     const err = new Error(message);
     err.status = response.status;
     err.payload = errorPayload;
